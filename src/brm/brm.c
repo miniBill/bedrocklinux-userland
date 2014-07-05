@@ -18,18 +18,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define dynarray(T) dynarray_##T
+#include "trie.h"
 
-#define inline_dynarray(T) { \
+#define safe_array(T) safe_array_##T
+
+#define _safe_array(T) { \
 	int size; \
 	T * array; \
 }
 
-#define def_dynarray(T) struct dynarray(T) inline_dynarray(T);
+#define def_safe_array(T) struct safe_array(T) _safe_array(T);
+
+def_safe_array(uid_t);
+def_safe_array(gid_t);
 
 struct tables {
-	struct inline_dynarray(uid_t) uid;
-	struct inline_dynarray(gid_t) gid;
+	struct safe_array(uid_t) uid;
+	struct safe_array(gid_t) gid;
 };
 
 enum stat_result {
@@ -61,6 +66,11 @@ enum stat_result lookup_path(const char* path)
 	return Other;
 }
 
+def_trie(char);
+def_trie_create(char);
+def_trie_add_string(char);
+def_trie_dump(char);
+
 void merge_etcfiles(const char* master, const char* client, struct tables* tables)
 {
 
@@ -73,6 +83,10 @@ void walk_tree(const char* tree, struct tables* tables)
 
 int main(int argc, char* argv[])
 {
+	struct trie(char)* test_trie = trie_create(char)();
+	trie_add_string(char)(test_trie, "ciao", "ciao");
+	trie_dump(char)(test_trie);
+	
 	if (argc < 3) {
 		fprintf(stderr, "Usage: brm <master etc> <client etc> [<client path>]\n");
 		fprintf(stderr, "The optional parameter, if supplied, enables owner fixing.\n");

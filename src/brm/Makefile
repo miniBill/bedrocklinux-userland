@@ -1,5 +1,5 @@
-all: brm.c
-	$(CC) -Wall brm.c -o brm -static
+all: brm.c trie.c trie.h
+	$(CC) -Wall brm.c trie.c -o brm -static
 
 clean:
 	-rm brm

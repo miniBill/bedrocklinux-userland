@@ -11,15 +11,106 @@
  * of a filesystem to fix file owners.
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define dynarray(T) dynarray_##T
+
+#define inline_dynarray(T) { \
+    int size; \
+    T * array; \
+}
+
+#define def_dynarray(T) struct dynarray(T) inline_dynarray(T);
+
+struct tables {
+    struct inline_dynarray(uid_t) uid;
+    struct inline_dynarray(gid_t) gid;
+};
+
+enum stat_result {
+    File,
+    Directory,
+    Other,
+    Nothing // Doesn't exist
+};
+
+/*
+ * Lookup a path, returns the kind of object.
+ */
+enum stat_result lookup_path(const char* path)
+{
+    struct stat s;
+
+    int err = stat(path, &s);
+
+    if(err == -1) {
+        if(errno != ENOENT) {
+            perror("stat");
+            exit(1);
+        }
+        return Nothing;
+    } else {
+        if(S_ISDIR(s.st_mode)) {
+            return Directory;
+        } else {
+            if(S_ISREG(s.st_mode)) {
+                return File;
+            } else {
+                return Other;
+            }
+        }
+    }
+}
+
+void merge_etcfiles(const char* master, const char* client, struct tables* tables)
+{
+
+}
+
+void walk_tree(const char* tree, struct tables* tables)
+{
+
+}
+
 int main(int argc, char* argv[])
 {
-	// Sanity check - ensure there are sufficient arguments
-	if (argc < 2) {
-		fprintf(stderr, "No client path specified, aborting\n");
+    if (argc < 3) {
+        fprintf(stderr, "Usage: brm <master etc> <client etc> [<client path>]\n");
+        fprintf(stderr, "The optional parameter, if supplied, enables owner fixing.\n");
 		exit(1);
 	}
 
-	fprintf(stderr, "Implement me!\n");
+    const char* master = argv[1];
+    const char* client = argv[2];
+    const char* tree   = argv[3];
+
+    if(lookup_path(master) != Directory) {
+        fprintf(stderr, "Master path doesn't exist or is not a directory");
+        exit(1);
+    }
+
+    if(lookup_path(client) != Directory) {
+        fprintf(stderr, "Client path doesn't exist or is not a directory");
+        exit(1);
+    }
+
+    if(tree && lookup_path(tree) != Directory) {
+        fprintf(stderr, "Tree path doesn't exist or is not a directory");
+        exit(1);
+    }
+
+    struct tables tables;
+    merge_etcfiles(master, client, &tables);
+
+    if(tree) {
+        walk_tree(tree, &tables);
+    }
+
 	return -1;
 }
 

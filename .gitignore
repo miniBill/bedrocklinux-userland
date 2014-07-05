@@ -1,6 +1,7 @@
 src/brc/brc
 src/brp/brp
 src/bru/bru
+src/brm/brm
 src/libbedrock/libbedrock.o
 src/libbedrock/libbedrock.a
 src/*linux*

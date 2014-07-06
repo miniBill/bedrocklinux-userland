@@ -7,7 +7,7 @@
 
 using namespace std;
 
-ostream& operator<<(ostream& stream, const user_info& info) {
+ostream& operator<<(ostream& stream, const passwd_info& info) {
 	return stream
 		<< info._name  << ':'
 		<< 'x'         << ':'
@@ -32,6 +32,29 @@ ostream& operator<<(ostream& stream, const group_info& info) {
 	return stream;
 }
 
+template<typename T>
+static void print_nonzero(ostream& stream, T value)
+{
+	stream << ':';
+	if(value != 0)
+		stream << value;
+}
+
+ostream& operator<<(ostream& stream, const shadow_info& info) {
+	stream
+		<< info._name   << ':'
+		<< info._pwd;
+	print_nonzero(stream, info._lstchg);
+	stream
+		<< ':' << info._min
+		<< ':' << info._max;
+	print_nonzero(stream, info._warn);
+	print_nonzero(stream, info._inact);
+	print_nonzero(stream, info._expire);
+	print_nonzero(stream, info._flag);
+	return stream;
+}
+
 // Gets a field from a semicolon-separated line
 // Errors and exits on failure
 static string get_field(istringstream& stream, const string& name, int line_number)
@@ -44,9 +67,9 @@ static string get_field(istringstream& stream, const string& name, int line_numb
 	return toret;
 }
 
-unordered_map<string, user_info> read_passwd(const string& path)
+std::unordered_map<string, passwd_info> read_passwd(const string& path)
 {
-	unordered_map<string, user_info> users;
+	unordered_map<string, passwd_info> users;
 	ifstream passwd(path + "/passwd");
 
 	if(!passwd)
@@ -77,7 +100,7 @@ unordered_map<string, user_info> read_passwd(const string& path)
 		string key = name;
 
 		users.emplace(piecewise_construct, forward_as_tuple(move(key)),
-						  forward_as_tuple(move(name), uid, gid, move(gecos), move(dir), move(shell)));
+					  forward_as_tuple(move(name), uid, gid, move(gecos), move(dir), move(shell)));
 	}
 
 	return users;
@@ -119,8 +142,48 @@ unordered_map<string, group_info> read_group(const string& path)
 		string key = name;
 
 		groups.emplace(piecewise_construct, forward_as_tuple(move(key)),
-						  forward_as_tuple(move(name), gid, move(mem)));
+					   forward_as_tuple(move(name), gid, move(mem)));
 	}
 
 	return groups;
+}
+
+std::unordered_map<string, shadow_info> read_shadow(const string& path)
+{
+	unordered_map<string, shadow_info> users;
+	ifstream shadow(path + "/shadow");
+
+	if(!shadow)
+		exit(1);
+
+	string line;
+	for (int line_number = 1; getline(shadow, line); line_number++) {
+		istringstream iss(line);
+		string name     = get_field(iss, "name",          line_number);
+		string pwd      = get_field(iss, "password",      line_number);
+		string s_lstchg = get_field(iss, "last change",   line_number);
+		string s_min    = get_field(iss, "min time",      line_number);
+		string s_max    = get_field(iss, "max time",      line_number);
+		string s_warn   = get_field(iss, "warn time",     line_number);
+		string s_inact  = get_field(iss, "inactive time", line_number);
+		string s_expire = get_field(iss, "expire time",   line_number);
+		string s_flag; getline(iss, s_flag); //We don't care if empty
+
+		//TODO: check for errors here
+		long lstchg = atol(s_lstchg.c_str());
+		long min    = atol(s_min.c_str());
+		long max    = atol(s_max.c_str());
+		long warn   = atol(s_warn.c_str());
+		long inact  = atol(s_inact.c_str());
+		long expire = atol(s_expire.c_str());
+		unsigned long flag = atol(s_flag.c_str());
+
+		string key = name;
+
+		users.emplace(piecewise_construct, forward_as_tuple(move(key)),
+					  forward_as_tuple(move(name), move(pwd),
+									   lstchg, min, max, warn, inact, expire, flag));
+	}
+
+	return users;
 }

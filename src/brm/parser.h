@@ -5,7 +5,9 @@
 #include <ostream>
 #include <unordered_map>
 
-class user_info {
+#include "shadow.h"
+
+class passwd_info {
 public:
 	//The names come from the passwd structure
 	const std::string _name;
@@ -15,12 +17,12 @@ public:
 	const std::string _dir;
 	const std::string _shell;
 
-	user_info(std::string name, uid_t uid, gid_t gid,
+	passwd_info(std::string name, uid_t uid, gid_t gid,
 			  std::string gecos, std::string dir, std::string shell) :
 		_name(name), _uid(uid), _gid(gid),
 		_gecos(gecos), _dir(dir), _shell(shell) {}
 
-	friend std::ostream& operator<<(std::ostream& stream, const user_info& info);
+	friend std::ostream& operator<<(std::ostream& stream, const passwd_info& info);
 };
 
 class group_info {
@@ -37,7 +39,30 @@ public:
 	friend std::ostream& operator<<(std::ostream& stream, const group_info& info);
 };
 
-std::unordered_map<std::string, user_info> read_passwd(const std::string& path);
-std::unordered_map<std::string, group_info> read_group(const std::string& path);
+class shadow_info {
+public:
+	const std::string _name;
+	const std::string _pwd;
+	const long _lstchg;
+	const long _min;
+	const long _max;
+	const long _warn;
+	const long _inact;
+	const long _expire;
+	const unsigned long _flag;
+
+	shadow_info(std::string name, std::string pwd, long lstchg,
+				long min, long max, long warn, long inact, long expire,
+				unsigned long flag) :
+		_name(name), _pwd(pwd), _lstchg(lstchg),
+		_min(min), _max(max), _warn(warn), _inact(inact), _expire(expire),
+		_flag(flag) {}
+
+	friend std::ostream& operator<<(std::ostream& stream, const shadow_info& info);
+};
+
+std::unordered_map<std::string, passwd_info> read_passwd(const std::string& path);
+std::unordered_map<std::string,  group_info> read_group (const std::string& path);
+std::unordered_map<std::string, shadow_info> read_shadow(const std::string& path);
 
 #endif // PARSER_H

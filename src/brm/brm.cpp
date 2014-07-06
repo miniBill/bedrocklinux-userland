@@ -47,12 +47,11 @@ tables merge_etcfiles(const std::string& master, const std::string& client)
 	unordered_map<string, group_info> master_group = read_group(master);
 	unordered_map<string, group_info> client_group = read_group(client);
 
-	/*for (auto& group : master_group) {
-		cout << group.second << endl;
-	}*/
+	unordered_map<string, passwd_info> master_passwd = read_passwd(master);
+	unordered_map<string, passwd_info> client_passwd = read_passwd(client);
 
-	unordered_map<string, user_info> master_users = read_passwd(master);
-	unordered_map<string, user_info> client_users = read_passwd(client);
+	unordered_map<string, shadow_info> master_shadow = read_shadow(master);
+	unordered_map<string, shadow_info> client_shadow = read_shadow(client);
 
 	return toret;
 }

@@ -1,5 +1,5 @@
-all: brm.c trie.c trie.h
-	$(CC) -Wall brm.c trie.c -o brm -static
+all: brm.cpp parser.cpp filesystem.cpp
+	$(CXX) -std=c++11 -Wall -Wno-unused-function $^ -o brm -static -g -ggdb
 
 clean:
 	-rm brm

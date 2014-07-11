@@ -52,7 +52,7 @@ namespace Brm
 		}
 
 		static Dictionary<UInt32, UInt32> merge_passwd (Dictionary<string, passwd_info> master_passwd,
-		                                              Dictionary<string, passwd_info> client_passwd)
+		                                                Dictionary<string, passwd_info> client_passwd)
 		{
 			throw new NotImplementedException ();
 		}
@@ -97,7 +97,7 @@ namespace Brm
 
 			string master = argv [0];
 			string client = argv [1];
-			string tree = argv [2];
+			string tree = argv.Length >= 3 ? argv [2] : null;
 
 			if (Filesystem.lookup_path (master) != stat_result.Directory) {
 				Console.WriteLine ("Master path doesn't exist or is not a directory");
@@ -126,8 +126,9 @@ namespace Brm
 }
 class Tables
 {
-	Dictionary<UInt32, UInt32> _uid;
-	Dictionary<UInt32, UInt32> _gid;
+	public Dictionary<UInt32, UInt32> Uid{ get; private set; }
+
+	public Dictionary<UInt32, UInt32> Gid{ get; private set; }
 
 	public UInt32 translate (UInt32 uid)
 	{
@@ -137,7 +138,7 @@ class Tables
 	public Tables (Dictionary<UInt32, UInt32> uid,
 	               Dictionary<UInt32, UInt32> gid)
 	{
-		_uid = uid;
-		_gid = gid;
+		Uid = uid;
+		Gid = gid;
 	}
 }

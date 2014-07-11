@@ -11,15 +11,15 @@ class passwd_info {
 public:
 	//The names come from the passwd structure
 	const std::string _name;
-	const uid_t _uid;
+	const uid_t _id;
 	const gid_t _gid;
 	const std::string _gecos; //User info
 	const std::string _dir;
 	const std::string _shell;
 
-	passwd_info(std::string name, uid_t uid, gid_t gid,
+	passwd_info(std::string name, uid_t id, gid_t gid,
 			  std::string gecos, std::string dir, std::string shell) :
-		_name(name), _uid(uid), _gid(gid),
+		_name(name), _id(id), _gid(gid),
 		_gecos(gecos), _dir(dir), _shell(shell) {}
 
 	friend std::ostream& operator<<(std::ostream& stream, const passwd_info& info);
@@ -29,12 +29,12 @@ class group_info {
 public:
 	//The names come from the group structure
 	const std::string _name;
-	const gid_t _gid;
+	const gid_t _id;
 	const std::vector<std::string> _mem; //Members
 
-	group_info(std::string name, gid_t gid,
+	group_info(std::string name, gid_t id,
 			  std::vector<std::string>&& mem) :
-		_name(name), _gid(gid), _mem(mem) {}
+		_name(name), _id(id), _mem(mem) {}
 
 	friend std::ostream& operator<<(std::ostream& stream, const group_info& info);
 };

@@ -18,6 +18,8 @@
 #include <stdlib.h>      // exit
 
 #include <iostream>
+#include <unordered_map>
+#include <set>
 
 #include "parser.h"
 #include "filesystem.h"
@@ -34,26 +36,74 @@ public:
 		return 0;
 	}
 
-	tables() = default;
+	tables(unordered_map<uid_t, uid_t>&& uid,
+		   unordered_map<uid_t, uid_t>&& gid) :
+		_uid(uid), _gid(gid) {}
 	tables(tables&& other) = default;
 	tables(const tables& other) = delete;
 	~tables() = default;
 };
 
+template<typename I, typename O>
+set<O>&& get_ids(const unordered_map<string, I>& inputs)
+{
+	set<O> used;
+	for (auto& input : inputs)
+		used.insert(input.second._id);
+	return move(used);
+}
+
+void add_group_to(const group_info& info, const string& path)
+{
+	throw "Implement me";
+}
+
+unordered_map<gid_t, gid_t> merge_group(const string master_group_path,
+										const unordered_map<string, group_info>& master_group,
+										const unordered_map<string, group_info>& client_group)
+{
+	unordered_map<gid_t, gid_t> toret;
+	set<gid_t> used_master = get_ids<group_info, gid_t>(master_group);
+	set<gid_t> used_client = get_ids<group_info, gid_t>(client_group);
+
+	vector<pair<gid_t, gid_t>> freelist;
+
+	for (auto& group : client_group) {
+		const group_info& info = group.second;
+		if (master_group.find(info._name) == master_group.end()) {
+			if(used_master.find(info._id) == used_master.end()) {
+				add_group_to(info, master_group_path);
+				if(toret.find(info._id) == toret.end()) {
+
+				}
+			}
+		}
+	}
+	return toret;
+}
+
+unordered_map<uid_t, uid_t> merge_passwd(const unordered_map<string, passwd_info>& master_passwd,
+										 const unordered_map<string, passwd_info>& client_passwd)
+{
+	return *(unordered_map<uid_t, uid_t>*)nullptr;
+}
+
 tables merge_etcfiles(const std::string& master, const std::string& client)
 {
-	tables toret;
-
 	unordered_map<string, group_info> master_group = read_group(master);
 	unordered_map<string, group_info> client_group = read_group(client);
+
+	unordered_map<gid_t, gid_t> gid = merge_group(master + "/group", master_group, client_group);
 
 	unordered_map<string, passwd_info> master_passwd = read_passwd(master);
 	unordered_map<string, passwd_info> client_passwd = read_passwd(client);
 
+	unordered_map<uid_t, uid_t> uid = merge_passwd(master_passwd, client_passwd);
+
 	unordered_map<string, shadow_info> master_shadow = read_shadow(master);
 	unordered_map<string, shadow_info> client_shadow = read_shadow(client);
 
-	return toret;
+	return tables(move(uid), move(gid));
 }
 
 void walk_tree(const char* tree, struct tables* tables)

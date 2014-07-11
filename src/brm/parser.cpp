@@ -11,7 +11,7 @@ ostream& operator<<(ostream& stream, const passwd_info& info) {
 	return stream
 		<< info._name  << ':'
 		<< 'x'         << ':'
-		<< info._uid   << ':'
+		<< info._id   << ':'
 		<< info._gid   << ':'
 		<< info._gecos << ':'
 		<< info._dir   << ':'
@@ -22,7 +22,7 @@ ostream& operator<<(ostream& stream, const group_info& info) {
 	stream
 		<< info._name  << ':'
 		<< 'x'         << ':'
-		<< info._gid   << ':';
+		<< info._id   << ':';
 	for (size_t i = 0; i < info._mem.size(); i++) {
 		if (i != 0) {
 			stream << ',';

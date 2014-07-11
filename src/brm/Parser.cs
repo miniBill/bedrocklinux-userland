@@ -1,116 +1,125 @@
-#ifndef PARSER_H
-#define PARSER_H
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Brm;
+using System.Linq;
 
-#include <vector>
-#include <ostream>
-#include <unordered_map>
-
-#include "shadow.h"
-
-class passwd_info {
-public:
+public class passwd_info
+{
 	//The names come from the passwd structure
-	const std::string _name;
-	const uid_t _id;
-	const gid_t _gid;
-	const std::string _gecos; //User info
-	const std::string _dir;
-	const std::string _shell;
+	public string _name;
+	public UInt32 _id;
+	public UInt32 _gid;
+	public string _gecos;
+	//User info
+	public string _dir;
+	public string _shell;
 
-	passwd_info(std::string name, uid_t id, gid_t gid,
-			  std::string gecos, std::string dir, std::string shell) :
-		_name(name), _id(id), _gid(gid),
-		_gecos(gecos), _dir(dir), _shell(shell) {}
+	public passwd_info (string name, UInt32 id, UInt32 gid,
+	                    string gecos, string dir, string shell)
+	{
+		_name = name;
+		_id = id;
+		_gid = gid;
+		_gecos = gecos;
+		_dir = dir;
+		_shell = shell;
+	}
 
-	friend std::ostream& operator<<(std::ostream& stream, const passwd_info& info);
-};
-
-class group_info {
-public:
-	//The names come from the group structure
-	const std::string _name;
-	const gid_t _id;
-	const std::vector<std::string> _mem; //Members
-
-	group_info(std::string name, gid_t id,
-			  std::vector<std::string>&& mem) :
-		_name(name), _id(id), _mem(mem) {}
-
-	friend std::ostream& operator<<(std::ostream& stream, const group_info& info);
-};
-
-class shadow_info {
-public:
-	const std::string _name;
-	const std::string _pwd;
-	const long _lstchg;
-	const long _min;
-	const long _max;
-	const long _warn;
-	const long _inact;
-	const long _expire;
-	const unsigned long _flag;
-
-	shadow_info(std::string name, std::string pwd, long lstchg,
-				long min, long max, long warn, long inact, long expire,
-				unsigned long flag) :
-		_name(name), _pwd(pwd), _lstchg(lstchg),
-		_min(min), _max(max), _warn(warn), _inact(inact), _expire(expire),
-		_flag(flag) {}
-
-	friend std::ostream& operator<<(std::ostream& stream, const shadow_info& info);
-};
-
-std::unordered_map<std::string, passwd_info> read_passwd(const std::string& path);
-std::unordered_map<std::string,  group_info> read_group (const std::string& path);
-std::unordered_map<std::string, shadow_info> read_shadow(const std::string& path);
-
-#endif // PARSER_H
-#include "parser.h"
-
-#include <sstream>
-#include <iostream>
-#include <fstream>
-#include <tuple>
-
-using namespace std;
-
-ostream& operator<<(ostream& stream, const passwd_info& info) {
-	return stream
-		<< info._name  << ':'
-		<< 'x'         << ':'
-		<< info._id   << ':'
-		<< info._gid   << ':'
-		<< info._gecos << ':'
-		<< info._dir   << ':'
-		<< info._shell;
+	public override string ToString ()
+	{
+		return string.Format ("[passwd_info]");
+		/*ostream& operator<<(ostream& stream, passwd_info& info) {
+			return stream
+				<< info._name << ':'
+					<< 'x' << ':'
+					<< info._id << ':'
+					<< info._gid << ':'
+					<< info._gecos << ':'
+					<< info._dir << ':'
+					<< info._shell;*/
+	}
 }
 
-ostream& operator<<(ostream& stream, const group_info& info) {
-	stream
-		<< info._name  << ':'
-		<< 'x'         << ':'
-		<< info._id   << ':';
+public class group_info
+{
+	//The names come from the group structure
+	public string _name;
+	public UInt32 _id;
+	public List<string> _mem;
+	//Members
+	public group_info (string name, UInt32 id,
+	                   List<string> mem)
+	{
+		_name = name;
+		_id = id;
+		_mem = mem;
+	}
+
+	public override string ToString ()
+	{
+		return string.Format ("[group_info]");
+		/*
+		 * stream
+		<< info._name << ':'
+		<< 'x' << ':'
+		<< info._id << ':';
 	for (size_t i = 0; i < info._mem.size(); i++) {
 		if (i != 0) {
 			stream << ',';
 		}
 		stream << info._mem[i];
 	}
-	return stream;
+	return stream;*/
+	}
 }
 
-template<typename T>
-static void print_nonzero(ostream& stream, T value)
+public class shadow_info
 {
-	stream << ':';
-	if(value != 0)
-		stream << value;
-}
+	public string _name;
+	public string _pwd;
+	public long _lstchg;
+	public long _min;
+	public long _max;
+	public long _warn;
+	public long _inact;
+	public long _expire;
+	public ulong _flag;
 
-ostream& operator<<(ostream& stream, const shadow_info& info) {
-	stream
-		<< info._name   << ':'
+	public shadow_info (string name, string pwd, long lstchg,
+	                    long min, long max, long warn, long inact, long expire,
+	                    ulong flag)
+	{
+		_name = name;
+		_pwd = pwd;
+		_lstchg = lstchg;
+		_min = min;
+		_max = max;
+		_warn = warn;
+		_inact = inact;
+		_expire = expire;
+		_flag = flag;
+	}
+
+	static void print_nonzero (StreamWriter stream, long value)
+	{
+		stream.Write (':');
+		if (value != 0)
+			stream.Write (value);
+	}
+
+	static void print_nonzero (StreamWriter stream, ulong value)
+	{
+		stream.Write (':');
+		if (value != 0)
+			stream.Write (value);
+	}
+
+	public override string ToString ()
+	{
+		return string.Format ("[shadow_info]");
+		/*stream
+		<< info._name << ':'
 		<< info._pwd;
 	print_nonzero(stream, info._lstchg);
 	stream
@@ -120,138 +129,107 @@ ostream& operator<<(ostream& stream, const shadow_info& info) {
 	print_nonzero(stream, info._inact);
 	print_nonzero(stream, info._expire);
 	print_nonzero(stream, info._flag);
-	return stream;
-}
-
-// Gets a field from a semicolon-separated line
-// Errors and exits on failure
-static string get_field(istringstream& stream, const string& name, int line_number)
-{
-	string toret;
-	if (!getline(stream, toret, ':')) {
-		cerr << "Couldn't read " << name << " field on line " << line_number << endl;
-		exit(1);
+	return stream;*/
 	}
-	return toret;
-}
+};
 
-std::unordered_map<string, passwd_info> read_passwd(const string& path)
+public static class Parser
 {
-	unordered_map<string, passwd_info> users;
-	ifstream passwd(path + "/passwd");
+	public static Dictionary<string, passwd_info> read_passwd (string path)
+	{
+		Dictionary<string, passwd_info> users = new Dictionary<string, passwd_info> ();
+		using (StreamReader reader = File.OpenText(Path.Combine( path,"passwd"))) {
+			for (int line_number = 1; !reader.EndOfStream; line_number++) {
+				string line = reader.ReadLine ();
+				string[] split = line.Split (':');
+				if (split.Length != 7)
+					throw new Exception (string.Format ("Invalid record at line{0}: \"{1}\"", line_number, line));
+				string name = split [0];
+				string shadow = split [1];
+				string s_uid = split [2];
+				string s_gid = split [3];
+				string gecos = split [4];
+				string dir = split [5];
+				string shell = split [6];
 
-	if(!passwd)
-		exit(1);
+				if (shadow != "x") 
+					throw new Exception ("Unexpected \"" + shadow
+						+ "\" instead of \"x\" as second field on line "
+						+ line_number);
+		
+				UInt32 uid = UInt32.Parse (s_uid);
+				UInt32 gid = UInt32.Parse (s_gid);
 
-	string line;
-	for (int line_number = 1; getline(passwd, line); line_number++) {
-		istringstream iss(line);
-		string name   = get_field(iss, "name",     line_number);
-		string shadow = get_field(iss, "password", line_number);
-		string s_uid  = get_field(iss, "uid",      line_number);
-		string s_gid  = get_field(iss, "gid",      line_number);
-		string gecos  = get_field(iss, "GECOS",    line_number);
-		string dir    = get_field(iss, "home dir", line_number);
-		string shell  = get_field(iss, "shell",    line_number);
+				users.Add (name, new passwd_info (name, uid, gid, gecos, dir, shell));
+			}
+		}
+		return users;
+	}
 
-		if(shadow != "x") {
-			cerr << "Unexpected \"" << shadow
-				 << "\" instead of \"x\" as second field on line "
-				 << line_number << endl;
-			exit(1);
+	public static Dictionary<string, group_info> read_group (string path)
+	{
+		Dictionary<string, group_info> groups = new Dictionary<string, group_info> ();
+		using (StreamReader reader = File.OpenText(Path.Combine( path,"group"))) {
+			for (int line_number = 1; !reader.EndOfStream; line_number++) {
+				string line = reader.ReadLine ();
+				string[] split = line.Split (':');
+				
+				if (split.Length != 4)
+					throw new Exception (string.Format ("Invalid record at line{0}: \"{1}\"", line_number, line));
+				string name = split [0];
+				string shadow = split [1];
+				string s_gid = split [2];
+				string s_mem = split [3];
+
+				if (shadow != "x") 
+					throw new Exception ("Unexpected \"" + shadow
+						+ "\" instead of \"x\" as second field on line "
+						+ line_number);
+
+				UInt32 gid = UInt32.Parse (s_gid);
+
+				List<string> mem = s_mem.Split (':').ToList ();
+
+				groups.Add (name, new group_info (name, gid, mem));
+			}
 		}
 
-		//TODO: check for errors here
-		uid_t uid = atoi(s_uid.c_str());
-		gid_t gid = atoi(s_gid.c_str());
-
-		string key = name;
-
-		users.emplace(piecewise_construct, forward_as_tuple(move(key)),
-					  forward_as_tuple(move(name), uid, gid, move(gecos), move(dir), move(shell)));
+		return groups;
 	}
 
-	return users;
-}
+	public static Dictionary<string, shadow_info> read_shadow (string path)
+	{
+		Dictionary<string, shadow_info> users = new Dictionary<string, shadow_info> ();
+		using (StreamReader reader = File.OpenText(Path.Combine( path,"shadow"))) {
+			for (int line_number = 1; !reader.EndOfStream; line_number++) {
+				string line = reader.ReadLine ();
+				string[] split = line.Split (':');
+				if (split.Length != 9)
+					throw new Exception (string.Format ("Invalid record at line{0}: \"{1}\"", line_number, line));
 
-unordered_map<string, group_info> read_group(const string& path)
-{
-	unordered_map<string, group_info> groups;
-	ifstream group(path + "/group");
+				string name = split [0];
+				string pwd = split [1];
+				string s_lstchg = split [2];
+				string s_min = split [3];
+				string s_max = split [4];
+				string s_warn = split [5];
+				string s_inact = split [6];
+				string s_expire = split [7];
+				string s_flag = split [8];
 
-	if(!group)
-		exit(1);
+				//TODO: check for errors here
+				long lstchg = long.Parse (s_lstchg);
+				long min = long.Parse (s_min);
+				long max = long.Parse (s_max);
+				long warn = long.Parse (s_warn);
+				long inact = long.Parse (s_inact);
+				long expire = long.Parse (s_expire);
+				ulong flag = ulong.Parse (s_flag);
 
-	string line;
-	for (int line_number = 1; getline(group, line); line_number++) {
-		istringstream iss(line);
-		string name   = get_field(iss, "name",     line_number);
-		string shadow = get_field(iss, "password", line_number);
-		string s_gid  = get_field(iss, "gid",      line_number);
-		string s_mem; getline(iss, s_mem); //We don't care if empty
-
-		if(shadow != "x") {
-			cerr << "Unexpected \"" << shadow
-				 << "\" instead of \"x\" as second field on line "
-				 << line_number << endl;
-			exit(1);
+				users.Add (name, new shadow_info (name, pwd, lstchg, min, max, warn, inact, expire, flag));
+			}
 		}
 
-		//TODO: check for errors here
-		gid_t gid = atoi(s_gid.c_str());
-
-		vector<string> mem;
-		istringstream smems(s_mem);
-		string member;
-		while(getline(smems, member)) {
-			mem.push_back(move(member));
-		}
-
-		string key = name;
-
-		groups.emplace(piecewise_construct, forward_as_tuple(move(key)),
-					   forward_as_tuple(move(name), gid, move(mem)));
+		return users;
 	}
-
-	return groups;
-}
-
-std::unordered_map<string, shadow_info> read_shadow(const string& path)
-{
-	unordered_map<string, shadow_info> users;
-	ifstream shadow(path + "/shadow");
-
-	if(!shadow)
-		exit(1);
-
-	string line;
-	for (int line_number = 1; getline(shadow, line); line_number++) {
-		istringstream iss(line);
-		string name     = get_field(iss, "name",          line_number);
-		string pwd      = get_field(iss, "password",      line_number);
-		string s_lstchg = get_field(iss, "last change",   line_number);
-		string s_min    = get_field(iss, "min time",      line_number);
-		string s_max    = get_field(iss, "max time",      line_number);
-		string s_warn   = get_field(iss, "warn time",     line_number);
-		string s_inact  = get_field(iss, "inactive time", line_number);
-		string s_expire = get_field(iss, "expire time",   line_number);
-		string s_flag; getline(iss, s_flag); //We don't care if empty
-
-		//TODO: check for errors here
-		long lstchg = atol(s_lstchg.c_str());
-		long min    = atol(s_min.c_str());
-		long max    = atol(s_max.c_str());
-		long warn   = atol(s_warn.c_str());
-		long inact  = atol(s_inact.c_str());
-		long expire = atol(s_expire.c_str());
-		unsigned long flag = atol(s_flag.c_str());
-
-		string key = name;
-
-		users.emplace(piecewise_construct, forward_as_tuple(move(key)),
-					  forward_as_tuple(move(name), move(pwd),
-									   lstchg, min, max, warn, inact, expire, flag));
-	}
-
-	return users;
 }

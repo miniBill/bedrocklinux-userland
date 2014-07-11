@@ -1,3 +1,15 @@
+using System;
+
+namespace Brm
+{
+	class MainClass
+	{
+		public static void Main (string[] args)
+		{
+			Console.WriteLine ("Hello World!");
+		}
+	}
+}
 /*
  * brm.cpp
  *

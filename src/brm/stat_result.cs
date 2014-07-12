@@ -2,7 +2,7 @@ using Mono.Unix;
 
 namespace Brm
 {
-	public enum stat_result
+	public enum StatResult
 	{
 		File,
 		Directory,

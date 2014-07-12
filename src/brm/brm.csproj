@@ -43,6 +43,10 @@
     <Compile Include="Filesystem.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="stat_result.cs" />
+    <Compile Include="Tables.cs" />
+    <Compile Include="passwd_info.cs" />
+    <Compile Include="group_info.cs" />
+    <Compile Include="shadow_info.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -54,7 +58,4 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
-  <ItemGroup>
-    <Folder Include="brm\" />
-  </ItemGroup>
 </Project>

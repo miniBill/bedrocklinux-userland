@@ -4,19 +4,23 @@ namespace Brm
 {
 	public class Filesystem
 	{
-		//Stats a path, returns the kind of object.
-		public static stat_result lookup_path (string path)
+		/// <summary>
+		/// Stats a path, returns the kind of object.
+		/// </summary>
+		/// <returns>The kind of object.</returns>
+		/// <param name="path">A path.</param>
+		public static StatResult LookupPath (string path)
 		{
 			UnixFileSystemInfo entry = UnixFileInfo.GetFileSystemEntry (path);
 			if (!entry.Exists)
-				return stat_result.Nothing;
+				return StatResult.Nothing;
 			switch (entry.FileType) {
 			case FileTypes.RegularFile:
-				return stat_result.File;
+				return StatResult.File;
 			case FileTypes.Directory:
-				return stat_result.Directory;
+				return StatResult.Directory;
 			default:
-				return stat_result.Other;
+				return StatResult.Other;
 			}
 		}
 	}

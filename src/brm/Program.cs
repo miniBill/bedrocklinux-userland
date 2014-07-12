@@ -19,17 +19,17 @@ namespace Brm
 {
 	class MainClass
 	{
-		static void add_group_to (group_info info, string path)
+		static void add_group_to (GroupInfo info, string path)
 		{
 			throw new NotImplementedException ();
 		}
 
-		static HashSet<UInt32> get_gids (Dictionary<string, group_info> master_group)
+		static HashSet<UInt32> get_gids (Dictionary<string, GroupInfo> master_group)
 		{
-			return new HashSet<UInt32> (master_group.Values.Select (g => g._id));
+			return new HashSet<UInt32> (master_group.Values.Select (g => g.Gid));
 		}
 
-		static Dictionary<UInt32, UInt32> merge_group (string master_group_path, Dictionary<string, group_info> master_group, Dictionary<string, group_info> client_group)
+		static Dictionary<UInt32, UInt32> merge_group (string master_group_path, Dictionary<string, GroupInfo> master_group, Dictionary<string, GroupInfo> client_group)
 		{
 			Dictionary<UInt32, UInt32> toret = new Dictionary<UInt32, UInt32> ();
 			HashSet<UInt32> used_master = get_gids (master_group);
@@ -37,12 +37,14 @@ namespace Brm
 
 			List<Tuple<UInt32, UInt32>> freelist;
 
-			foreach (var group in client_group) {
-				group_info info = group.Value;
-				if (!master_group.ContainsKey (info._name)) {
-					if (!used_master.Contains (info._id)) {
+
+
+			foreach (KeyValuePair<string, GroupInfo> group in client_group) {
+				GroupInfo info = group.Value;
+				if (!master_group.ContainsKey (info.Name)) {
+					if (!used_master.Contains (info.Gid)) {
 						add_group_to (info, master_group_path);
-						if (!toret.ContainsKey (info._id)) {
+						if (!toret.ContainsKey (info.Gid)) {
 
 						}
 					}
@@ -64,8 +66,8 @@ namespace Brm
 
 		static Tables merge_etcfiles (string master, string client)
 		{
-			Dictionary<string, group_info> master_group = Parser.read_group (master);
-			Dictionary<string, group_info> client_group = Parser.read_group (client);
+			Dictionary<string, GroupInfo> master_group = Parser.read_group (master);
+			Dictionary<string, GroupInfo> client_group = Parser.read_group (client);
 
 			Dictionary<UInt32, UInt32> gid = merge_group (master + "/group", master_group, client_group);
 
@@ -99,17 +101,17 @@ namespace Brm
 			string client = argv [1];
 			string tree = argv.Length >= 3 ? argv [2] : null;
 
-			if (Filesystem.lookup_path (master) != stat_result.Directory) {
+			if (Filesystem.LookupPath (master) != StatResult.Directory) {
 				Console.WriteLine ("Master path doesn't exist or is not a directory");
 				return 1;
 			}
 
-			if (Filesystem.lookup_path (client) != stat_result.Directory) {
+			if (Filesystem.LookupPath (client) != StatResult.Directory) {
 				Console.WriteLine ("Client path doesn't exist or is not a directory");
 				return 1;
 			}
 
-			if (tree != null && Filesystem.lookup_path (tree) != stat_result.Directory) {
+			if (tree != null && Filesystem.LookupPath (tree) != StatResult.Directory) {
 				Console.WriteLine ("Tree path doesn't exist or is not a directory");
 				return 1;
 			}
@@ -122,23 +124,5 @@ namespace Brm
 
 			return -1;
 		}
-	}
-}
-class Tables
-{
-	public Dictionary<UInt32, UInt32> Uid{ get; private set; }
-
-	public Dictionary<UInt32, UInt32> Gid{ get; private set; }
-
-	public UInt32 translate (UInt32 uid)
-	{
-		throw new NotImplementedException ();
-	}
-
-	public Tables (Dictionary<UInt32, UInt32> uid,
-	               Dictionary<UInt32, UInt32> gid)
-	{
-		Uid = uid;
-		Gid = gid;
 	}
 }

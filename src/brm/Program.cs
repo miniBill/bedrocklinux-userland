@@ -19,12 +19,12 @@ namespace Brm
 {
 	class MainClass
 	{
-		static LimitsInfo GetLimits (string master)
+		static void AddGroupTo (GroupInfo info, string path)
 		{
 			throw new NotImplementedException ();
 		}
 
-		static void AddGroupTo (GroupInfo info, string path)
+		static void MergeGroupInto (GroupInfo merging, string masterGroupsPath)
 		{
 			throw new NotImplementedException ();
 		}
@@ -44,6 +44,7 @@ namespace Brm
 			HashSet<uint> usedClient = new HashSet<uint> (GetGids (clientGroups));
 
 			List<GroupInfo> toAddToMaster = new List<GroupInfo> ();
+			List<GroupInfo> toMergeIntoMaster = new List<GroupInfo> ();
 
 			IEnumerator<uint> freelistUser = Utils.InclusiveRange (limits.MinGid, limits.MaxGid)
 				.Except (usedMaster.Concat (usedClient)).GetEnumerator ();
@@ -55,23 +56,29 @@ namespace Brm
 
 			foreach (KeyValuePair<string, GroupInfo> clientGroupPair in clientGroups) {
 				GroupInfo clientGroup = clientGroupPair.Value;
-				if (!masterGroups.ContainsKey (clientGroup.Name)) {
-					if (!usedMaster.Contains (clientGroup.Gid))
+				if (masterGroups.ContainsKey (clientGroup.Name)) {
+					GroupInfo masterGroup = masterGroups [clientGroup.Name];
+					if (clientGroup.Gid != masterGroup.Gid)
+						toret.Add (clientGroup.Gid, masterGroup.Gid);
+					toMergeIntoMaster.Add (clientGroup.WithGid (masterGroup.Gid));
+				} else {
+					if (usedMaster.Contains (clientGroup.Gid)) {
+						IEnumerator<uint> source = clientGroup.SystemGroup ? freelistSystem : freelistUser;
+						uint newGid = source.Current;
+						if (!source.MoveNext ())
+							throw new AbortException ("Ran out of gids");
+						toret.Add (clientGroup.Gid, newGid);
+						toAddToMaster.Add (clientGroup.WithGid (newGid));
+					} else
 						toAddToMaster.Add (clientGroup);
-					else {
-						if (clientGroup.SystemGroup) {
-							uint newGid = freelistSystem.Current;
-							if (!freelistSystem.MoveNext ())
-								throw new AbortException ("Ran out of gids");
-							GroupInfo newGroup = clientGroup.WithGid (newGid);
-							toAddToMaster.Add (newGroup);
-							toret.Add (clientGroup.Gid, newGid);
-						} else
-							throw new NotImplementedException ();
-					}
-				} else
-					throw new NotImplementedException ();
+				}
 			}
+
+			foreach (GroupInfo adding in toAddToMaster)
+				AddGroupTo (adding, masterGroupsPath);
+			foreach (GroupInfo merging in toMergeIntoMaster)
+				MergeGroupInto (merging, masterGroupsPath);
+
 			return toret;
 		}
 
@@ -89,8 +96,8 @@ namespace Brm
 
 		static Tables MergeEtcfiles (string master, string client)
 		{
-			LimitsInfo masterLimits = GetLimits (master);
-			LimitsInfo clientLimits = GetLimits (client);
+			LimitsInfo masterLimits = Parser.ReadLimits (master);
+			LimitsInfo clientLimits = Parser.ReadLimits (client);
 
 			if (masterLimits != clientLimits)
 				throw new AbortException ("UID/GID limits are different between master and client");

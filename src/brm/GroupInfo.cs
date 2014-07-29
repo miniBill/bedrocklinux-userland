@@ -12,13 +12,21 @@ namespace Brm
 
 		public UInt32 Gid { get; private set; }
 
-		public List<string> Members { get; private set; }
+		public IEnumerable<string> Members { get; private set; }
 
-		public GroupInfo (string name, UInt32 gid, List<string> members)
+		public bool SystemGroup { get; private set; }
+
+		public GroupInfo (string name, UInt32 gid, IEnumerable<string> members, bool systemGroup)
 		{
 			Name = name;
 			Gid = gid;
 			Members = members;
+			SystemGroup = systemGroup;
+		}
+
+		public GroupInfo WithGid (uint newGid)
+		{
+			return new GroupInfo (Name, newGid, Members, SystemGroup);
 		}
 
 		public override string ToString ()
@@ -28,10 +36,13 @@ namespace Brm
 			sb.Append (":x:");
 			sb.Append (Gid);
 			sb.Append (':');
-			for (int i = 0; i < Members.Count; i++) {
-				if (i != 0)
+			bool first = true;
+			foreach (var member in Members) {
+				if (first)
+					first = false;
+				else
 					sb.Append (',');
-				sb.Append (Members [i]);
+				sb.Append (member);
 			}
 			return sb.ToString ();
 		}

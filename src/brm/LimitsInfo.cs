@@ -10,15 +10,37 @@
  */
 namespace Brm
 {
-	class LimitsInfo
+	public class LimitsInfo
 	{
-		public uint MinGid { get; set; }
+		public LimitsInfo (uint minSysUid, uint maxSysUid, uint minSysGid, uint maxSysGid,
+		                   uint minUid, uint maxUid, uint minGid, uint maxGid)
+		{
+			MinSysUid = minSysUid;
+			MaxSysUid = maxSysUid;
+			MinSysGid = minSysGid;
+			MaxSysGid = maxSysGid;
+			
+			MinUid = minUid;
+			MaxUid = maxUid;
+			MinGid = minGid;
+			MaxGid = maxGid;
+		}
 
-		public uint MaxGid { get; set; }
+		public uint MinUid { get; private set; }
 
-		public uint MinSysGid{ get; set; }
+		public uint MaxUid { get; private set; }
 
-		public uint MaxSysGid{ get; set; }
+		public uint MinSysUid { get; private set; }
+
+		public uint MaxSysUid { get; private set; }
+
+		public uint MinGid { get; private set; }
+
+		public uint MaxGid { get; private set; }
+
+		public uint MinSysGid { get; private set; }
+
+		public uint MaxSysGid { get; private set; }
 
 		public override bool Equals (object obj)
 		{
@@ -28,12 +50,28 @@ namespace Brm
 			return this == other;
 		}
 
+		public override int GetHashCode ()
+		{
+			return (int)(MinGid
+				+ 37 * (MaxGid
+				+ 37 * (MinSysGid
+				+ 37 * (MaxSysGid
+				+ 37 * (MinUid
+				+ 37 * (MaxUid
+				+ 37 * (MinSysUid
+				+ 37 * (MaxSysUid))))))));
+		}
+
 		public static bool operator == (LimitsInfo left, LimitsInfo right)
 		{
 			return left.MinGid == right.MinGid
 				&& left.MaxGid == right.MaxGid
 				&& left.MinSysGid == right.MinSysGid
-				&& left.MaxSysGid == right.MaxSysGid;
+				&& left.MaxSysGid == right.MaxSysGid
+				&& left.MinUid == right.MinUid
+				&& left.MaxUid == right.MaxUid
+				&& left.MinSysUid == right.MinSysUid
+				&& left.MaxSysUid == right.MaxSysUid;
 		}
 
 		public static bool operator != (LimitsInfo left, LimitsInfo right)

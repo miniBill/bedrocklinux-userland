@@ -40,8 +40,8 @@ namespace Brm
 		                                           Dictionary<string, GroupInfo> clientGroups)
 		{
 			Dictionary<uint, uint> toret = new Dictionary<uint, uint> ();
-			IEnumerable<uint> usedMaster = GetGids (masterGroups);
-			IEnumerable<uint> usedClient = GetGids (clientGroups);
+			HashSet<uint> usedMaster = new HashSet<uint> (GetGids (masterGroups));
+			HashSet<uint> usedClient = new HashSet<uint> (GetGids (clientGroups));
 
 			List<GroupInfo> toAddToMaster = new List<GroupInfo> ();
 
@@ -50,16 +50,27 @@ namespace Brm
 			IEnumerator<uint> freelistSystem = Utils.InclusiveRange (limits.MinSysGid, limits.MaxSysGid)
 				.Except (usedMaster.Concat (usedClient)).GetEnumerator ();
 
+			if (!freelistUser.MoveNext () || !freelistSystem.MoveNext ())
+				throw new AbortException ("Something went wrong with freelists");
+
 			foreach (KeyValuePair<string, GroupInfo> clientGroupPair in clientGroups) {
 				GroupInfo clientGroup = clientGroupPair.Value;
 				if (!masterGroups.ContainsKey (clientGroup.Name)) {
-					if (!usedMaster.Contains (clientGroup.Gid)) {
+					if (!usedMaster.Contains (clientGroup.Gid))
 						toAddToMaster.Add (clientGroup);
-						if (!toret.ContainsKey (clientGroup.Gid)) {
-
-						}
+					else {
+						if (clientGroup.SystemGroup) {
+							uint newGid = freelistSystem.Current;
+							if (!freelistSystem.MoveNext ())
+								throw new AbortException ("Ran out of gids");
+							GroupInfo newGroup = clientGroup.WithGid (newGid);
+							toAddToMaster.Add (newGroup);
+							toret.Add (clientGroup.Gid, newGid);
+						} else
+							throw new NotImplementedException ();
 					}
-				}
+				} else
+					throw new NotImplementedException ();
 			}
 			return toret;
 		}
@@ -84,18 +95,18 @@ namespace Brm
 			if (masterLimits != clientLimits)
 				throw new AbortException ("UID/GID limits are different between master and client");
 
-			Dictionary<string, GroupInfo> masterGroup = Parser.read_group (master);
-			Dictionary<string, GroupInfo> clientGroup = Parser.read_group (client);
+			Dictionary<string, GroupInfo> masterGroup = Parser.ReadGroup (masterLimits, master);
+			Dictionary<string, GroupInfo> clientGroup = Parser.ReadGroup (masterLimits, client);
 
 			Dictionary<uint, uint> gid = MergeGroups (masterLimits, master + "/group", masterGroup, clientGroup);
 
-			Dictionary<string, PasswdInfo> masterPasswd = Parser.read_passwd (master);
-			Dictionary<string, PasswdInfo> clientPasswd = Parser.read_passwd (client);
+			Dictionary<string, PasswdInfo> masterPasswd = Parser.ReadPasswd (master);
+			Dictionary<string, PasswdInfo> clientPasswd = Parser.ReadPasswd (client);
 
 			Dictionary<uint, uint> uid = MergePasswd (masterPasswd, clientPasswd);
 
-			Dictionary<string, ShadowInfo> masterShadow = Parser.read_shadow (master);
-			Dictionary<string, ShadowInfo> clientShadow = Parser.read_shadow (client);
+			Dictionary<string, ShadowInfo> masterShadow = Parser.ReadShadow (master);
+			Dictionary<string, ShadowInfo> clientShadow = Parser.ReadShadow (client);
 
 			MergeShadow (masterShadow, clientShadow);
 

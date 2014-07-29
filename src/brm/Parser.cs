@@ -7,9 +7,9 @@ namespace Brm
 {
 	public static class Parser
 	{
-		public static Dictionary<string, passwd_info> read_passwd (string path)
+		public static Dictionary<string, PasswdInfo> read_passwd (string path)
 		{
-			Dictionary<string, passwd_info> users = new Dictionary<string, passwd_info> ();
+			Dictionary<string, PasswdInfo> users = new Dictionary<string, PasswdInfo> ();
 			using (StreamReader reader = File.OpenText(Path.Combine( path,"passwd"))) {
 				for (int line_number = 1; !reader.EndOfStream; line_number++) {
 					string line = reader.ReadLine ();
@@ -32,7 +32,7 @@ namespace Brm
 					UInt32 uid = UInt32.Parse (s_uid);
 					UInt32 gid = UInt32.Parse (s_gid);
 
-					users.Add (name, new passwd_info (name, uid, gid, gecos, dir, shell));
+					users.Add (name, new PasswdInfo (name, uid, gid, gecos, dir, shell));
 				}
 			}
 			return users;
@@ -69,9 +69,9 @@ namespace Brm
 			return groups;
 		}
 
-		public static Dictionary<string, shadow_info> read_shadow (string path)
+		public static Dictionary<string, ShadowInfo> read_shadow (string path)
 		{
-			Dictionary<string, shadow_info> users = new Dictionary<string, shadow_info> ();
+			Dictionary<string, ShadowInfo> users = new Dictionary<string, ShadowInfo> ();
 			using (StreamReader reader = File.OpenText(Path.Combine( path,"shadow"))) {
 				for (int line_number = 1; !reader.EndOfStream; line_number++) {
 					string line = reader.ReadLine ();
@@ -97,7 +97,7 @@ namespace Brm
 					long expire = long.Parse (s_expire);
 					ulong flag = ulong.Parse (s_flag);
 
-					users.Add (name, new shadow_info (name, pwd, lstchg, min, max, warn, inact, expire, flag));
+					users.Add (name, new ShadowInfo (name, pwd, lstchg, min, max, warn, inact, expire, flag));
 				}
 			}
 

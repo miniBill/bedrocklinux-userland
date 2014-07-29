@@ -4,7 +4,7 @@ using System.IO;
 using Brm;
 using System.Linq;
 
-public class shadow_info
+public class ShadowInfo
 {
 	public string _name;
 	public string _pwd;
@@ -16,7 +16,7 @@ public class shadow_info
 	public long _expire;
 	public ulong _flag;
 
-	public shadow_info (string name, string pwd, long lstchg,
+	public ShadowInfo (string name, string pwd, long lstchg,
 	                    long min, long max, long warn, long inact, long expire,
 	                    ulong flag)
 	{

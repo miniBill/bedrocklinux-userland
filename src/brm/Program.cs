@@ -53,13 +53,13 @@ namespace Brm
 			return toret;
 		}
 
-		static Dictionary<UInt32, UInt32> merge_passwd (Dictionary<string, passwd_info> master_passwd,
-		                                                Dictionary<string, passwd_info> client_passwd)
+		static Dictionary<UInt32, UInt32> merge_passwd (Dictionary<string, PasswdInfo> master_passwd,
+		                                                Dictionary<string, PasswdInfo> client_passwd)
 		{
 			throw new NotImplementedException ();
 		}
 
-		static void merge_shadow (Dictionary<string, shadow_info> master_shadow, Dictionary<string, shadow_info> client_shadow)
+		static void merge_shadow (Dictionary<string, ShadowInfo> master_shadow, Dictionary<string, ShadowInfo> client_shadow)
 		{
 			throw new NotImplementedException ();
 		}
@@ -71,13 +71,13 @@ namespace Brm
 
 			Dictionary<UInt32, UInt32> gid = merge_group (master + "/group", master_group, client_group);
 
-			Dictionary<string, passwd_info> master_passwd = Parser.read_passwd (master);
-			Dictionary<string, passwd_info> client_passwd = Parser.read_passwd (client);
+			Dictionary<string, PasswdInfo> master_passwd = Parser.read_passwd (master);
+			Dictionary<string, PasswdInfo> client_passwd = Parser.read_passwd (client);
 
 			Dictionary<UInt32, UInt32> uid = merge_passwd (master_passwd, client_passwd);
 
-			Dictionary<string, shadow_info> master_shadow = Parser.read_shadow (master);
-			Dictionary<string, shadow_info> client_shadow = Parser.read_shadow (client);
+			Dictionary<string, ShadowInfo> master_shadow = Parser.read_shadow (master);
+			Dictionary<string, ShadowInfo> client_shadow = Parser.read_shadow (client);
 
 			merge_shadow (master_shadow, client_shadow);
 

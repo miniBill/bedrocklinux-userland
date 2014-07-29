@@ -4,7 +4,7 @@ using System.IO;
 using Brm;
 using System.Linq;
 
-public class passwd_info
+public class PasswdInfo
 {
 	//The names come from the passwd structure
 	public string _name;
@@ -15,7 +15,7 @@ public class passwd_info
 	public string _dir;
 	public string _shell;
 
-	public passwd_info (string name, UInt32 id, UInt32 gid,
+	public PasswdInfo (string name, UInt32 id, UInt32 gid,
 	                    string gecos, string dir, string shell)
 	{
 		_name = name;

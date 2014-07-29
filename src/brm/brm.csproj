@@ -47,6 +47,9 @@
     <Compile Include="StatResult.cs" />
     <Compile Include="PasswdInfo.cs" />
     <Compile Include="ShadowInfo.cs" />
+    <Compile Include="AbortException.cs" />
+    <Compile Include="LimitsInfo.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

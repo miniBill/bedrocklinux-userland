@@ -9,42 +9,53 @@
  *
  * This program will allow merging etcfiles, and walking
  * of a filesystem to fix file owners.
+ *
  */
 using System;
 using System.Collections.Generic;
-using Brm;
 using System.Linq;
 
 namespace Brm
 {
 	class MainClass
 	{
-		static void add_group_to (GroupInfo info, string path)
+		static LimitsInfo GetLimits (string master)
 		{
 			throw new NotImplementedException ();
 		}
 
-		static HashSet<UInt32> get_gids (Dictionary<string, GroupInfo> master_group)
+		static void AddGroupTo (GroupInfo info, string path)
 		{
-			return new HashSet<UInt32> (master_group.Values.Select (g => g.Gid));
+			throw new NotImplementedException ();
 		}
 
-		static Dictionary<UInt32, UInt32> merge_group (string master_group_path, Dictionary<string, GroupInfo> master_group, Dictionary<string, GroupInfo> client_group)
+		static IEnumerable<uint> GetGids (Dictionary<string, GroupInfo> masterGroup)
 		{
-			Dictionary<UInt32, UInt32> toret = new Dictionary<UInt32, UInt32> ();
-			HashSet<UInt32> used_master = get_gids (master_group);
-			HashSet<UInt32> used_client = get_gids (client_group);
+			return masterGroup.Values.Select (g => g.Gid);
+		}
 
-			List<Tuple<UInt32, UInt32>> freelist;
+		static Dictionary<uint, uint> MergeGroups (LimitsInfo limits,
+		                                           string masterGroupsPath,
+		                                           Dictionary<string, GroupInfo> masterGroups,
+		                                           Dictionary<string, GroupInfo> clientGroups)
+		{
+			Dictionary<uint, uint> toret = new Dictionary<uint, uint> ();
+			IEnumerable<uint> usedMaster = GetGids (masterGroups);
+			IEnumerable<uint> usedClient = GetGids (clientGroups);
 
+			List<GroupInfo> toAddToMaster = new List<GroupInfo> ();
 
+			IEnumerator<uint> freelistUser = Utils.InclusiveRange (limits.MinGid, limits.MaxGid)
+				.Except (usedMaster.Concat (usedClient)).GetEnumerator ();
+			IEnumerator<uint> freelistSystem = Utils.InclusiveRange (limits.MinSysGid, limits.MaxSysGid)
+				.Except (usedMaster.Concat (usedClient)).GetEnumerator ();
 
-			foreach (KeyValuePair<string, GroupInfo> group in client_group) {
-				GroupInfo info = group.Value;
-				if (!master_group.ContainsKey (info.Name)) {
-					if (!used_master.Contains (info.Gid)) {
-						add_group_to (info, master_group_path);
-						if (!toret.ContainsKey (info.Gid)) {
+			foreach (KeyValuePair<string, GroupInfo> clientGroupPair in clientGroups) {
+				GroupInfo clientGroup = clientGroupPair.Value;
+				if (!masterGroups.ContainsKey (clientGroup.Name)) {
+					if (!usedMaster.Contains (clientGroup.Gid)) {
+						toAddToMaster.Add (clientGroup);
+						if (!toret.ContainsKey (clientGroup.Gid)) {
 
 						}
 					}
@@ -53,38 +64,45 @@ namespace Brm
 			return toret;
 		}
 
-		static Dictionary<UInt32, UInt32> merge_passwd (Dictionary<string, PasswdInfo> master_passwd,
-		                                                Dictionary<string, PasswdInfo> client_passwd)
+		static Dictionary<uint, uint> MergePasswd (Dictionary<string, PasswdInfo> masterPasswd,
+		                                           Dictionary<string, PasswdInfo> clientPasswd)
 		{
 			throw new NotImplementedException ();
 		}
 
-		static void merge_shadow (Dictionary<string, ShadowInfo> master_shadow, Dictionary<string, ShadowInfo> client_shadow)
+		static void MergeShadow (Dictionary<string, ShadowInfo> masterShadow,
+		                         Dictionary<string, ShadowInfo> clientShadow)
 		{
 			throw new NotImplementedException ();
 		}
 
-		static Tables merge_etcfiles (string master, string client)
+		static Tables MergeEtcfiles (string master, string client)
 		{
-			Dictionary<string, GroupInfo> master_group = Parser.read_group (master);
-			Dictionary<string, GroupInfo> client_group = Parser.read_group (client);
+			LimitsInfo masterLimits = GetLimits (master);
+			LimitsInfo clientLimits = GetLimits (client);
 
-			Dictionary<UInt32, UInt32> gid = merge_group (master + "/group", master_group, client_group);
+			if (masterLimits != clientLimits)
+				throw new AbortException ("UID/GID limits are different between master and client");
 
-			Dictionary<string, PasswdInfo> master_passwd = Parser.read_passwd (master);
-			Dictionary<string, PasswdInfo> client_passwd = Parser.read_passwd (client);
+			Dictionary<string, GroupInfo> masterGroup = Parser.read_group (master);
+			Dictionary<string, GroupInfo> clientGroup = Parser.read_group (client);
 
-			Dictionary<UInt32, UInt32> uid = merge_passwd (master_passwd, client_passwd);
+			Dictionary<uint, uint> gid = MergeGroups (masterLimits, master + "/group", masterGroup, clientGroup);
 
-			Dictionary<string, ShadowInfo> master_shadow = Parser.read_shadow (master);
-			Dictionary<string, ShadowInfo> client_shadow = Parser.read_shadow (client);
+			Dictionary<string, PasswdInfo> masterPasswd = Parser.read_passwd (master);
+			Dictionary<string, PasswdInfo> clientPasswd = Parser.read_passwd (client);
 
-			merge_shadow (master_shadow, client_shadow);
+			Dictionary<uint, uint> uid = MergePasswd (masterPasswd, clientPasswd);
+
+			Dictionary<string, ShadowInfo> masterShadow = Parser.read_shadow (master);
+			Dictionary<string, ShadowInfo> clientShadow = Parser.read_shadow (client);
+
+			MergeShadow (masterShadow, clientShadow);
 
 			return new Tables (uid, gid);
 		}
 
-		static void walk_tree (string tree, Tables tables)
+		static void WalTree (string tree, Tables tables)
 		{
 			throw new NotImplementedException ();
 		}
@@ -116,10 +134,10 @@ namespace Brm
 				return 1;
 			}
 
-			Tables tables = merge_etcfiles (master, client);
+			Tables tables = MergeEtcfiles (master, client);
 
 			if (tree != null) {
-				walk_tree (tree, tables);
+				WalTree (tree, tables);
 			}
 
 			return -1;

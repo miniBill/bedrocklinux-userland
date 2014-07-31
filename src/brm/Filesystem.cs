@@ -2,7 +2,7 @@ using Mono.Unix;
 
 namespace Brm
 {
-	public class Filesystem
+	public static class Filesystem
 	{
 		/// <summary>
 		/// Stats a path, returns the kind of object.
@@ -11,7 +11,7 @@ namespace Brm
 		/// <param name="path">A path.</param>
 		public static StatResult LookupPath (string path)
 		{
-			UnixFileSystemInfo entry = UnixFileInfo.GetFileSystemEntry (path);
+			UnixFileSystemInfo entry = UnixFileSystemInfo.GetFileSystemEntry (path);
 			if (!entry.Exists)
 				return StatResult.Nothing;
 			switch (entry.FileType) {

@@ -1,35 +1,37 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using Brm;
-using System.Linq;
 
-public class PasswdInfo
+namespace Brm
 {
-	//The names come from the passwd structure
-	public string _name;
-	public UInt32 _id;
-	public UInt32 _gid;
-	public string _gecos;
-	//User info
-	public string _dir;
-	public string _shell;
-
-	public PasswdInfo (string name, UInt32 id, UInt32 gid,
-	                    string gecos, string dir, string shell)
+	public class PasswdInfo
 	{
-		_name = name;
-		_id = id;
-		_gid = gid;
-		_gecos = gecos;
-		_dir = dir;
-		_shell = shell;
-	}
+		//The names come from the passwd structure
+		public string Name { get; private set; }
 
-	public override string ToString ()
-	{
-		return string.Format ("[passwd_info]");
-		/*ostream& operator<<(ostream& stream, passwd_info& info) {
+		public UInt32 Id { get; private set; }
+
+		public UInt32 Gid { get; private set; }
+
+		public string Gecos { get; private set; }
+		//User info
+		public string Dir { get; private set; }
+
+		public string Shell { get; private set; }
+
+		public PasswdInfo (string name, UInt32 id, UInt32 gid,
+		                   string gecos, string dir, string shell)
+		{
+			Name = name;
+			Id = id;
+			Gid = gid;
+			Gecos = gecos;
+			Dir = dir;
+			Shell = shell;
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[passwd_info]");
+			/*ostream& operator<<(ostream& stream, passwd_info& info) {
 			return stream
 				<< info._name << ':'
 					<< 'x' << ':'
@@ -38,5 +40,6 @@ public class PasswdInfo
 					<< info._gecos << ':'
 					<< info._dir << ':'
 					<< info._shell;*/
+		}
 	}
 }

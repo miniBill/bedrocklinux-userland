@@ -10,13 +10,12 @@
  */
 
 using System;
-using Brm;
 
 namespace Brm
 {
 	class AbortException : Exception
 	{
-		public AbortException (string message) : base(message)
+		public AbortException (string message) : base (message)
 		{
 		}
 	}

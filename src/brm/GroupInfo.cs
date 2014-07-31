@@ -1,7 +1,17 @@
+/*
+ * GroupInfo.cs
+ *
+ *      This program is free software; you can redistribute it and/or
+ *      modify it under the terms of the GNU General Public License
+ *      version 2 as published by the Free Software Foundation.
+ *
+ * Copyright (c) 2014 Leonardo Taglialegne <cmt.miniBill@gmail.com>
+ *
+ */
+
+
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Brm
@@ -31,13 +41,13 @@ namespace Brm
 
 		public override string ToString ()
 		{
-			StringBuilder sb = new StringBuilder ();
+			var sb = new StringBuilder ();
 			sb.Append (Name);
 			sb.Append (":x:");
 			sb.Append (Gid);
 			sb.Append (':');
 			bool first = true;
-			foreach (var member in Members) {
+			foreach (string member in Members) {
 				if (first)
 					first = false;
 				else

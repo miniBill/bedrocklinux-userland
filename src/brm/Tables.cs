@@ -10,6 +10,7 @@
  * This program will allow merging etcfiles, and walking
  * of a filesystem to fix file owners.
  */
+
 using System;
 using System.Collections.Generic;
 
@@ -23,16 +24,12 @@ namespace Brm
 
 		public UInt32 TranslateUid (UInt32 uid)
 		{
-			if (Uid.ContainsKey (uid))
-				return Uid [uid];
-			return uid;
+			return Uid.ContainsKey (uid) ? Uid [uid] : uid;
 		}
 
 		public UInt32 TranslateGid (UInt32 gid)
 		{
-			if (Gid.ContainsKey (gid))
-				return Gid [gid];
-			return gid;
+			return Gid.ContainsKey (gid) ? Gid [gid] : gid;
 		}
 
 		public Tables (Dictionary<UInt32, UInt32> uid,

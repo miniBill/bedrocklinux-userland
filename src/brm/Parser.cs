@@ -37,26 +37,26 @@ namespace Brm
 			uint? maxSysGid = null;
 			uint? minGid = null;
 			uint? maxGid = null;
-			using (StreamReader reader=File.OpenText(Path.Combine(path,"adduser.conf"))) {
-				for (int lineNumber=1; !reader.EndOfStream; lineNumber++) {
+			using (StreamReader reader = File.OpenText (Path.Combine (path, "adduser.conf"))) {
+				for (int lineNumber = 1; !reader.EndOfStream; lineNumber++) {
 					string line = reader.ReadLine ();
 					if (line.Length == 0 || line [0] == '#')
 						continue;
-					if (line.StartsWith ("FIRST_SYSTEM_UID"))
+					if (line.StartsWith ("FIRST_SYSTEM_UID", StringComparison.Ordinal))
 						minSysUid = ParseValue (lineNumber, line);
-					else if (line.StartsWith ("LAST_SYSTEM_UID"))
+					else if (line.StartsWith ("LAST_SYSTEM_UID", StringComparison.Ordinal))
 						maxSysUid = ParseValue (lineNumber, line);
-					else if (line.StartsWith ("FIRST_UID"))
+					else if (line.StartsWith ("FIRST_UID", StringComparison.Ordinal))
 						minUid = ParseValue (lineNumber, line);
-					else if (line.StartsWith ("LAST_UID"))
+					else if (line.StartsWith ("LAST_UID", StringComparison.Ordinal))
 						maxUid = ParseValue (lineNumber, line);
-					else if (line.StartsWith ("FIRST_SYSTEM_GID"))
+					else if (line.StartsWith ("FIRST_SYSTEM_GID", StringComparison.Ordinal))
 						minSysGid = ParseValue (lineNumber, line);
-					else if (line.StartsWith ("LAST_SYSTEM_GID"))
+					else if (line.StartsWith ("LAST_SYSTEM_GID", StringComparison.Ordinal))
 						maxSysGid = ParseValue (lineNumber, line);
-					else if (line.StartsWith ("FIRST_GID"))
+					else if (line.StartsWith ("FIRST_GID", StringComparison.Ordinal))
 						minGid = ParseValue (lineNumber, line);
-					else if (line.StartsWith ("LAST_GID"))
+					else if (line.StartsWith ("LAST_GID", StringComparison.Ordinal))
 						maxGid = ParseValue (lineNumber, line);
 				}
 			}
@@ -85,13 +85,13 @@ namespace Brm
 
 		public static Dictionary<string, PasswdInfo> ReadPasswd (string path)
 		{
-			Dictionary<string, PasswdInfo> users = new Dictionary<string, PasswdInfo> ();
-			using (StreamReader reader = File.OpenText(Path.Combine( path,"passwd"))) {
+			var users = new Dictionary<string, PasswdInfo> ();
+			using (StreamReader reader = File.OpenText (Path.Combine (path, "passwd"))) {
 				for (int lineNumber = 1; !reader.EndOfStream; lineNumber++) {
 					string line = reader.ReadLine ();
 					string[] split = line.Split (':');
 					if (split.Length != 7)
-						throw new Exception (string.Format ("Invalid record at line{0}: \"{1}\"", lineNumber, line));
+						throw new AbortException (string.Format ("Invalid record at line{0}: \"{1}\"", lineNumber, line));
 					string name = split [0];
 					string shadow = split [1];
 					string s_uid = split [2];
@@ -100,10 +100,10 @@ namespace Brm
 					string dir = split [5];
 					string shell = split [6];
 
-					if (shadow != "x") 
-						throw new Exception ("Unexpected \"" + shadow
-							+ "\" instead of \"x\" as second field on line "
-							+ lineNumber);
+					if (shadow != "x")
+						throw new AbortException ("Unexpected \"" + shadow
+						+ "\" instead of \"x\" as second field on line "
+						+ lineNumber);
 		
 					UInt32 uid = UInt32.Parse (s_uid);
 					UInt32 gid = UInt32.Parse (s_gid);
@@ -116,23 +116,23 @@ namespace Brm
 
 		public static Dictionary<string, GroupInfo> ReadGroup (LimitsInfo limits, string path)
 		{
-			Dictionary<string, GroupInfo> groups = new Dictionary<string, GroupInfo> ();
-			using (StreamReader reader = File.OpenText(Path.Combine( path,"group"))) {
+			var groups = new Dictionary<string, GroupInfo> ();
+			using (StreamReader reader = File.OpenText (Path.Combine (path, "group"))) {
 				for (int line_number = 1; !reader.EndOfStream; line_number++) {
 					string line = reader.ReadLine ();
 					string[] split = line.Split (':');
 				
 					if (split.Length != 4)
-						throw new Exception (string.Format ("Invalid record at line{0}: \"{1}\"", line_number, line));
+						throw new AbortException (string.Format ("Invalid record at line{0}: \"{1}\"", line_number, line));
 					string name = split [0];
 					string shadow = split [1];
 					string s_gid = split [2];
 					string s_mem = split [3];
 
-					if (shadow != "x") 
-						throw new Exception ("Unexpected \"" + shadow
-							+ "\" instead of \"x\" as second field on line "
-							+ line_number);
+					if (shadow != "x")
+						throw new AbortException ("Unexpected \"" + shadow
+						+ "\" instead of \"x\" as second field on line "
+						+ line_number);
 
 					UInt32 gid = UInt32.Parse (s_gid);
 
@@ -149,13 +149,13 @@ namespace Brm
 
 		public static Dictionary<string, ShadowInfo> ReadShadow (string path)
 		{
-			Dictionary<string, ShadowInfo> users = new Dictionary<string, ShadowInfo> ();
-			using (StreamReader reader = File.OpenText(Path.Combine( path,"shadow"))) {
+			var users = new Dictionary<string, ShadowInfo> ();
+			using (StreamReader reader = File.OpenText (Path.Combine (path, "shadow")))
 				for (int line_number = 1; !reader.EndOfStream; line_number++) {
 					string line = reader.ReadLine ();
 					string[] split = line.Split (':');
 					if (split.Length != 9)
-						throw new Exception (string.Format ("Invalid record at line{0}: \"{1}\"", line_number, line));
+						throw new AbortException (string.Format ("Invalid record at line{0}: \"{1}\"", line_number, line));
 
 					string name = split [0];
 					string pwd = split [1];
@@ -177,7 +177,6 @@ namespace Brm
 
 					users.Add (name, new ShadowInfo (name, pwd, lstchg, min, max, warn, inact, expire, flag));
 				}
-			}
 
 			return users;
 		}

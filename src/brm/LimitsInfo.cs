@@ -1,5 +1,5 @@
 /*
- * Program.cs
+ * LimitsInfo.cs
  *
  *      This program is free software; you can redistribute it and/or
  *      modify it under the terms of the GNU General Public License
@@ -8,6 +8,7 @@
  * Copyright (c) 2014 Leonardo Taglialegne <cmt.miniBill@gmail.com>
  *
  */
+
 namespace Brm
 {
 	public class LimitsInfo
@@ -44,7 +45,7 @@ namespace Brm
 
 		public override bool Equals (object obj)
 		{
-			LimitsInfo other = obj as LimitsInfo;
+			var other = obj as LimitsInfo;
 			if (other == null)
 				return false;
 			return this == other;
@@ -53,25 +54,25 @@ namespace Brm
 		public override int GetHashCode ()
 		{
 			return (int)(MinGid
-				+ 37 * (MaxGid
-				+ 37 * (MinSysGid
-				+ 37 * (MaxSysGid
-				+ 37 * (MinUid
-				+ 37 * (MaxUid
-				+ 37 * (MinSysUid
-				+ 37 * (MaxSysUid))))))));
+			+ 37 * (MaxGid
+			+ 37 * (MinSysGid
+			+ 37 * (MaxSysGid
+			+ 37 * (MinUid
+			+ 37 * (MaxUid
+			+ 37 * (MinSysUid
+			+ 37 * (MaxSysUid))))))));
 		}
 
 		public static bool operator == (LimitsInfo left, LimitsInfo right)
 		{
 			return left.MinGid == right.MinGid
-				&& left.MaxGid == right.MaxGid
-				&& left.MinSysGid == right.MinSysGid
-				&& left.MaxSysGid == right.MaxSysGid
-				&& left.MinUid == right.MinUid
-				&& left.MaxUid == right.MaxUid
-				&& left.MinSysUid == right.MinSysUid
-				&& left.MaxSysUid == right.MaxSysUid;
+			&& left.MaxGid == right.MaxGid
+			&& left.MinSysGid == right.MinSysGid
+			&& left.MaxSysGid == right.MaxSysGid
+			&& left.MinUid == right.MinUid
+			&& left.MaxUid == right.MaxUid
+			&& left.MinSysUid == right.MinSysUid
+			&& left.MaxSysUid == right.MaxSysUid;
 		}
 
 		public static bool operator != (LimitsInfo left, LimitsInfo right)

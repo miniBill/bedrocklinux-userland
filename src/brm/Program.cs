@@ -11,22 +11,28 @@
  * of a filesystem to fix file owners.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 namespace Brm
 {
 	class MainClass
 	{
-		static void AddGroupTo (GroupInfo info, string path)
+		static void AddGroupTo (TextWriter output, GroupInfo info, string path)
 		{
-			throw new NotImplementedException ();
+			output.Write (path);
+			output.Write (": ");
+			output.WriteLine (info);
 		}
 
-		static void MergeGroupInto (GroupInfo merging, string masterGroupsPath)
+		static void MergeGroupInto (TextWriter output, GroupInfo info, string path)
 		{
-			throw new NotImplementedException ();
+			output.Write (path);
+			output.Write (": ");
+			output.WriteLine (info);
 		}
 
 		static IEnumerable<uint> GetGids (Dictionary<string, GroupInfo> masterGroup)
@@ -34,17 +40,18 @@ namespace Brm
 			return masterGroup.Values.Select (g => g.Gid);
 		}
 
-		static Dictionary<uint, uint> MergeGroups (LimitsInfo limits,
+		static Dictionary<uint, uint> MergeGroups (TextWriter output,
+		                                           LimitsInfo limits,
 		                                           string masterGroupsPath,
 		                                           Dictionary<string, GroupInfo> masterGroups,
 		                                           Dictionary<string, GroupInfo> clientGroups)
 		{
-			Dictionary<uint, uint> toret = new Dictionary<uint, uint> ();
-			HashSet<uint> usedMaster = new HashSet<uint> (GetGids (masterGroups));
-			HashSet<uint> usedClient = new HashSet<uint> (GetGids (clientGroups));
+			var toret = new Dictionary<uint, uint> ();
+			var usedMaster = new HashSet<uint> (GetGids (masterGroups));
+			var usedClient = new HashSet<uint> (GetGids (clientGroups));
 
-			List<GroupInfo> toAddToMaster = new List<GroupInfo> ();
-			List<GroupInfo> toMergeIntoMaster = new List<GroupInfo> ();
+			var toAddToMaster = new List<GroupInfo> ();
+			var toMergeIntoMaster = new List<GroupInfo> ();
 
 			IEnumerator<uint> freelistUser = Utils.InclusiveRange (limits.MinGid, limits.MaxGid)
 				.Except (usedMaster.Concat (usedClient)).GetEnumerator ();
@@ -60,7 +67,8 @@ namespace Brm
 					GroupInfo masterGroup = masterGroups [clientGroup.Name];
 					if (clientGroup.Gid != masterGroup.Gid)
 						toret.Add (clientGroup.Gid, masterGroup.Gid);
-					toMergeIntoMaster.Add (clientGroup.WithGid (masterGroup.Gid));
+					if (!clientGroup.Members.OrderBy (t => t).Distinct ().SequenceEqual (masterGroup.Members.OrderBy (t => t).Distinct ()))
+						toMergeIntoMaster.Add (clientGroup.WithGid (masterGroup.Gid));
 				} else {
 					if (usedMaster.Contains (clientGroup.Gid)) {
 						IEnumerator<uint> source = clientGroup.SystemGroup ? freelistSystem : freelistUser;
@@ -74,10 +82,12 @@ namespace Brm
 				}
 			}
 
+			output.WriteLine ("Groups to add:");
 			foreach (GroupInfo adding in toAddToMaster)
-				AddGroupTo (adding, masterGroupsPath);
+				AddGroupTo (output, adding, masterGroupsPath);
+			output.WriteLine ("Groups to merge:");
 			foreach (GroupInfo merging in toMergeIntoMaster)
-				MergeGroupInto (merging, masterGroupsPath);
+				MergeGroupInto (output, merging, masterGroupsPath);
 
 			return toret;
 		}
@@ -105,7 +115,7 @@ namespace Brm
 			Dictionary<string, GroupInfo> masterGroup = Parser.ReadGroup (masterLimits, master);
 			Dictionary<string, GroupInfo> clientGroup = Parser.ReadGroup (masterLimits, client);
 
-			Dictionary<uint, uint> gid = MergeGroups (masterLimits, master + "/group", masterGroup, clientGroup);
+			Dictionary<uint, uint> gid = MergeGroups (Console.Out, masterLimits, master + "/group", masterGroup, clientGroup);
 
 			Dictionary<string, PasswdInfo> masterPasswd = Parser.ReadPasswd (master);
 			Dictionary<string, PasswdInfo> clientPasswd = Parser.ReadPasswd (client);
@@ -120,7 +130,7 @@ namespace Brm
 			return new Tables (uid, gid);
 		}
 
-		static void WalTree (string tree, Tables tables)
+		static void WalkTree (string tree, Tables tables)
 		{
 			throw new NotImplementedException ();
 		}
@@ -152,13 +162,17 @@ namespace Brm
 				return 1;
 			}
 
-			Tables tables = MergeEtcfiles (master, client);
+			try {
+				Tables tables = MergeEtcfiles (master, client);
 
-			if (tree != null) {
-				WalTree (tree, tables);
+				if (tree != null)
+					WalkTree (tree, tables);
+			} catch (AbortException e) {
+				Console.WriteLine (string.Format ("Huston, we got a problem: {0}", e.Message));
+				return 1;
 			}
 
-			return -1;
+			return 0;
 		}
 	}
 }

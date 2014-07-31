@@ -1,64 +1,72 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Brm;
-using System.Linq;
+using System.Text;
 
-public class ShadowInfo
+namespace Brm
 {
-	public string _name;
-	public string _pwd;
-	public long _lstchg;
-	public long _min;
-	public long _max;
-	public long _warn;
-	public long _inact;
-	public long _expire;
-	public ulong _flag;
-
-	public ShadowInfo (string name, string pwd, long lstchg,
-	                    long min, long max, long warn, long inact, long expire,
-	                    ulong flag)
+	public class ShadowInfo
 	{
-		_name = name;
-		_pwd = pwd;
-		_lstchg = lstchg;
-		_min = min;
-		_max = max;
-		_warn = warn;
-		_inact = inact;
-		_expire = expire;
-		_flag = flag;
-	}
+		public string Name { get; private set; }
 
-	static void print_nonzero (StreamWriter stream, long value)
-	{
-		stream.Write (':');
-		if (value != 0)
-			stream.Write (value);
-	}
+		public string Pwd { get; private set; }
 
-	static void print_nonzero (StreamWriter stream, ulong value)
-	{
-		stream.Write (':');
-		if (value != 0)
-			stream.Write (value);
-	}
+		public long Lstchg { get; private set; }
 
-	public override string ToString ()
-	{
-		return string.Format ("[shadow_info]");
-		/*stream
-		<< info._name << ':'
-		<< info._pwd;
-	print_nonzero(stream, info._lstchg);
-	stream
-		<< ':' << info._min
-		<< ':' << info._max;
-	print_nonzero(stream, info._warn);
-	print_nonzero(stream, info._inact);
-	print_nonzero(stream, info._expire);
-	print_nonzero(stream, info._flag);
-	return stream;*/
+		public long Min { get; private set; }
+
+		public long Max { get; private set; }
+
+		public long Warn { get; private set; }
+
+		public long Inact { get; private set; }
+
+		public long Expire { get; private set; }
+
+		public ulong Flag { get; private set; }
+
+		public ShadowInfo (string name, string pwd, long lstchg,
+		                   long min, long max, long warn, long inact, long expire,
+		                   ulong flag)
+		{
+			Name = name;
+			Pwd = pwd;
+			Lstchg = lstchg;
+			Min = min;
+			Max = max;
+			Warn = warn;
+			Inact = inact;
+			Expire = expire;
+			Flag = flag;
+		}
+
+		static void print_nonzero (StringBuilder sb, long value)
+		{
+			sb.Append (':');
+			if (value != 0)
+				sb.Append (value);
+		}
+
+		static void print_nonzero (StringBuilder sb, ulong value)
+		{
+			sb.Append (':');
+			if (value != 0)
+				sb.Append (value);
+		}
+
+		public override string ToString ()
+		{
+			var sb = new StringBuilder ();
+			sb.Append (Name);
+			sb.Append (':');
+			sb.Append (Pwd);
+			print_nonzero (sb, Lstchg);
+			sb.Append (':');
+			sb.Append (Min);
+			sb.Append (':');
+			sb.Append (Max);
+			print_nonzero (sb, Warn);
+			print_nonzero (sb, Inact);
+			print_nonzero (sb, Expire);
+			print_nonzero (sb, Flag);
+			return sb.ToString ();
+		}
 	}
-};
+}

@@ -1,3 +1,15 @@
+/*
+ * PasswdInfo.cs
+ *
+ *      This program is free software; you can redistribute it and/or
+ *      modify it under the terms of the GNU General Public License
+ *      version 2 as published by the Free Software Foundation.
+ *
+ * Copyright (c) 2014 Leonardo Taglialegne <cmt.miniBill@gmail.com>
+ *
+ */
+
+
 using System;
 
 namespace Brm
@@ -17,8 +29,11 @@ namespace Brm
 
 		public string Shell { get; private set; }
 
+		public bool SystemUser { get; private set; }
+
 		public PasswdInfo (string name, UInt32 id, UInt32 gid,
-		                   string gecos, string dir, string shell)
+		                   string gecos, string dir, string shell,
+		                   bool systemUser)
 		{
 			Name = name;
 			Id = id;
@@ -26,6 +41,12 @@ namespace Brm
 			Gecos = gecos;
 			Dir = dir;
 			Shell = shell;
+			SystemUser = systemUser;
+		}
+
+		public PasswdInfo WithId (uint newId)
+		{
+			return new PasswdInfo (Name, newId, Gid, Gecos, Dir, Shell, SystemUser);
 		}
 
 		public override string ToString ()

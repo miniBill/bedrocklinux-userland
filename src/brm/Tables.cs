@@ -1,5 +1,5 @@
 /*
- * Program.cs
+ * Tables.cs
  *
  *      This program is free software; you can redistribute it and/or
  *      modify it under the terms of the GNU General Public License
@@ -7,9 +7,8 @@
  *
  * Copyright (c) 2014 Leonardo Taglialegne <cmt.miniBill@gmail.com>
  *
- * This program will allow merging etcfiles, and walking
- * of a filesystem to fix file owners.
  */
+
 
 using System;
 using System.Collections.Generic;

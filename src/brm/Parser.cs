@@ -1,3 +1,14 @@
+/*
+ * Parser.cs
+ *
+ *      This program is free software; you can redistribute it and/or
+ *      modify it under the terms of the GNU General Public License
+ *      version 2 as published by the Free Software Foundation.
+ *
+ * Copyright (c) 2014 Leonardo Taglialegne <cmt.miniBill@gmail.com>
+ *
+ */
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -83,7 +94,7 @@ namespace Brm
 				minUid.Value, maxUid.Value, minGid.Value, maxGid.Value);
 		}
 
-		public static Dictionary<string, PasswdInfo> ReadPasswd (string path)
+		public static Dictionary<string, PasswdInfo> ReadPasswd (LimitsInfo limits, string path)
 		{
 			var users = new Dictionary<string, PasswdInfo> ();
 			using (StreamReader reader = File.OpenText (Path.Combine (path, "passwd"))) {
@@ -108,11 +119,15 @@ namespace Brm
 					UInt32 uid = UInt32.Parse (s_uid);
 					UInt32 gid = UInt32.Parse (s_gid);
 
-					users.Add (name, new PasswdInfo (name, uid, gid, gecos, dir, shell));
+					bool sys = uid < limits.MinUid || uid > limits.MaxUid;
+
+					users.Add (name, new PasswdInfo (name, uid, gid, gecos, dir, shell, sys));
 				}
 			}
 			return users;
 		}
+
+		static char[] semicolon = { ':' };
 
 		public static Dictionary<string, GroupInfo> ReadGroup (LimitsInfo limits, string path)
 		{
@@ -138,7 +153,7 @@ namespace Brm
 
 					bool sys = gid < limits.MinGid || gid > limits.MaxGid;
 
-					List<string> mem = s_mem.Split (':').ToList ();
+					List<string> mem = s_mem.Split (semicolon, StringSplitOptions.RemoveEmptyEntries).ToList ();
 
 					groups.Add (name, new GroupInfo (name, gid, mem, sys));
 				}

@@ -20,23 +20,23 @@ namespace Brm
 	{
 		public string Name { get; private set; }
 
-		public UInt32 Gid { get; private set; }
+		public UInt32 Id { get; private set; }
 
-		public IEnumerable<string> Members { get; private set; }
+		public IReadOnlyCollection<string> Members { get; private set; }
 
 		public bool SystemGroup { get; private set; }
 
-		public GroupInfo (string name, UInt32 gid, IEnumerable<string> members, bool systemGroup)
+		public GroupInfo (string name, UInt32 id, IReadOnlyCollection<string> members, bool systemGroup)
 		{
 			Name = name;
-			Gid = gid;
+			Id = id;
 			Members = members;
 			SystemGroup = systemGroup;
 		}
 
-		public GroupInfo WithGid (uint newGid)
+		public GroupInfo WithId (uint newId)
 		{
-			return new GroupInfo (Name, newGid, Members, SystemGroup);
+			return new GroupInfo (Name, newId, Members, SystemGroup);
 		}
 
 		public override string ToString ()
@@ -44,7 +44,7 @@ namespace Brm
 			var sb = new StringBuilder ();
 			sb.Append (Name);
 			sb.Append (":x:");
-			sb.Append (Gid);
+			sb.Append (Id);
 			sb.Append (':');
 			bool first = true;
 			foreach (string member in Members) {

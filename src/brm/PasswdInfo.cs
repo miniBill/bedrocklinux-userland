@@ -23,8 +23,9 @@ namespace Brm
 
 		public UInt32 Gid { get; private set; }
 
-		public string Gecos { get; private set; }
 		//User info
+		public string Gecos { get; private set; }
+
 		public string Dir { get; private set; }
 
 		public string Shell { get; private set; }
@@ -47,6 +48,24 @@ namespace Brm
 		public PasswdInfo WithId (uint newId)
 		{
 			return new PasswdInfo (Name, newId, Gid, Gecos, Dir, Shell, SystemUser);
+		}
+
+		public override bool Equals (object obj)
+		{
+			var other = obj as PasswdInfo;
+			return other != null && this == other;
+		}
+
+		public static bool operator == (PasswdInfo left, PasswdInfo right)
+		{
+			return left.Name == right.Name && left.Id == right.Id && left.Gid == right.Gid
+			&& left.Gecos == right.Gecos && left.Dir == right.Dir && left.Shell == right.Shell
+			&& left.SystemUser == right.SystemUser;
+		}
+
+		public static bool operator != (PasswdInfo left, PasswdInfo right)
+		{
+			return !(left == right);
 		}
 
 		public override string ToString ()

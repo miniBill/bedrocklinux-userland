@@ -41,7 +41,7 @@ namespace Brm
 			Dictionary<string, PasswdInfo> masterPasswd = Parser.ReadPasswd (masterLimits, master);
 			Dictionary<string, PasswdInfo> clientPasswd = Parser.ReadPasswd (masterLimits, client);
 
-			Dictionary<uint, uint> uid = PasswdMerger.MergePasswd (Console.Out, masterLimits, masterPasswd, clientPasswd);
+			Dictionary<uint, uint> uid = PasswdMerger.MergePasswd (Console.Out, masterLimits, master + "/passwd", masterPasswd, clientPasswd);
 
 			Dictionary<string, ShadowInfo> masterShadow = Parser.ReadShadow (master);
 			Dictionary<string, ShadowInfo> clientShadow = Parser.ReadShadow (client);

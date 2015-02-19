@@ -12,14 +12,22 @@ namespace Brm
 			return passwd.Values.Select (g => g.Id);
 		}
 
+		static void AddUserTo (TextWriter output, PasswdInfo info, string path)
+		{
+			output.Write (path);
+			output.Write (": ");
+			output.WriteLine (info);
+		}
+
 		public static Dictionary<uint, uint> MergePasswd (TextWriter output,
 		                                                  LimitsInfo limits,
-		                                                  Dictionary<string, PasswdInfo> masterPasswd,
-		                                                  Dictionary<string, PasswdInfo> clientPasswd)
+		                                                  string masterPasswdPath,
+		                                                  Dictionary<string, PasswdInfo> masterPasswds,
+		                                                  Dictionary<string, PasswdInfo> clientPasswds)
 		{
 			var toret = new Dictionary<uint, uint> ();
-			var usedMaster = new HashSet<uint> (GetUids (masterPasswd));
-			var usedClient = new HashSet<uint> (GetUids (clientPasswd));
+			var usedMaster = new HashSet<uint> (GetUids (masterPasswds));
+			var usedClient = new HashSet<uint> (GetUids (clientPasswds));
 
 			var toAddToMaster = new List<PasswdInfo> ();
 
@@ -31,27 +39,29 @@ namespace Brm
 			if (!freelistUser.MoveNext () || !freelistSystem.MoveNext ())
 				throw new AbortException ("Something went wrong with freelists");
 
-			foreach (KeyValuePair<string, PasswdInfo> clientGroupPair in clientPasswd) {
-				PasswdInfo clientGroup = clientGroupPair.Value;
-				if (masterPasswd.ContainsKey (clientGroup.Name)) {
-					PasswdInfo masterGroup = masterPasswd [clientGroup.Name];
-					if (clientGroup.Id != masterGroup.Id)
-						toret.Add (clientGroup.Id, masterGroup.Id);
+			foreach (KeyValuePair<string, PasswdInfo> clientPasswdPair in clientPasswds) {
+				PasswdInfo clientUser = clientPasswdPair.Value;
+				if (masterPasswds.ContainsKey (clientUser.Name)) {
+					PasswdInfo masterPasswd = masterPasswds [clientUser.Name];
+					if (clientUser.Id != masterPasswd.Id)
+						toret.Add (clientUser.Id, masterPasswd.Id);
 
-					PasswdInfo translated = clientGroup.WithId (masterGroup.Id);
+					PasswdInfo translated = clientUser.WithId (masterPasswd.Id);
 
-					if (translated != masterGroup)
-						throw new AbortException (string.Format ("User {0} too different between master and client", masterGroup.Name));
+					if (translated != masterPasswd) {
+						bool fake = translated == masterPasswd;
+						throw new AbortException (string.Format ("User {0} too different between master and client", masterPasswd.Name));
+					}
 				} else {
-					if (usedMaster.Contains (clientGroup.Gid)) {
-						IEnumerator<uint> source = clientGroup.SystemUser ? freelistSystem : freelistUser;
+					if (usedMaster.Contains (clientUser.Gid)) {
+						IEnumerator<uint> source = clientUser.SystemUser ? freelistSystem : freelistUser;
 						uint newGid = source.Current;
 						if (!source.MoveNext ())
 							throw new AbortException ("Ran out of gids");
-						toret.Add (clientGroup.Gid, newGid);
-						toAddToMaster.Add (clientGroup.WithId (newGid));
+						toret.Add (clientUser.Gid, newGid);
+						toAddToMaster.Add (clientUser.WithId (newGid));
 					} else
-						toAddToMaster.Add (clientGroup);
+						toAddToMaster.Add (clientUser);
 				}
 			}
 
